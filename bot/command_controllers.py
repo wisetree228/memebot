@@ -33,7 +33,9 @@ async def add_meme_controller(callback: types.CallbackQuery, state: FSMContext):
     """
     Обрабатывает кнопку 'добавить мем'
     """
-    await get_or_create_new_user(chat_id=callback.message.chat.id, change_us=True, username=callback.message.from_user.username)
+    user = await callback.bot.get_chat(callback.from_user.id)
+    username = user.username
+    await get_or_create_new_user(chat_id=callback.message.chat.id, change_us=True, username=username)
     await callback.message.edit_text("Отправьте фото или видео, можно с текстом:")
     await state.set_state(Form.add_meme)
 
@@ -161,8 +163,10 @@ async def watch_meme_controller(callback: types.CallbackQuery, state: FSMContext
     """
     Обрабатывает кнопку "листать мемы"
     """
+    user = await callback.bot.get_chat(callback.from_user.id)
+    username = user.username
     await get_or_create_new_user(chat_id=callback.message.chat.id, change_us=True,
-                                 username=callback.message.from_user.username)
+                                 username=username)
     meme = await get_random_meme()
     if meme is None:
         if str(callback.message.chat.id) in ADMINS_ID:
@@ -174,8 +178,12 @@ async def watch_meme_controller(callback: types.CallbackQuery, state: FSMContext
 
         return
     user = meme.user
+    if meme.caption is None:
+        cap = ''
+    else:
+        cap = meme.caption
     caption_add = f"\n\nНа этом меме {await get_meme_likes_count(meme.id)} лайков"
-    await send_media_group_with_caption(media_items=[meme], caption=meme.caption+caption_add, bot=callback.message.bot, chat_id=callback.message.chat.id)
+    await send_media_group_with_caption(media_items=[meme], caption=cap+caption_add, bot=callback.message.bot, chat_id=callback.message.chat.id)
     if user.username:
         link = f'https://t.me/{user.username}'
     else:
