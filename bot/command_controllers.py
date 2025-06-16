@@ -16,12 +16,12 @@ ADMINS_ID = os.getenv("ADMINS_ID").split(',')
 
 async def start_controller(message: types.Message, state: FSMContext):
     """
-    Обработка команды /start.
+    Обработка команды /start. Даёт пользователю главное меню
     :param message:
     :param state:
     :return:
     """
-    user = await get_or_create_new_user(chat_id=message.chat.id, username=message.from_user.username, change_us=True)
+    await get_or_create_new_user(chat_id=message.chat.id, username=message.from_user.username, change_us=True)
     if str(message.chat.id) in ADMINS_ID:
         await message.answer(f"Это ремейк бота Джейсон Стетхэм, тут можно выкладывать и лайкать мемы!",
                              reply_markup=await get_admin_keyboard(await get_memes_count()))
@@ -30,11 +30,18 @@ async def start_controller(message: types.Message, state: FSMContext):
 
 
 async def add_meme_controller(callback: types.CallbackQuery, state: FSMContext):
+    """
+    Обрабатывает кнопку 'добавить мем'
+    """
+    await get_or_create_new_user(chat_id=callback.message.chat.id, change_us=True, username=callback.message.from_user.username)
     await callback.message.edit_text("Отправьте фото или видео, можно с текстом:")
     await state.set_state(Form.add_meme)
 
 
 async def add_media_controller(message: types.Message, state: FSMContext):
+    """
+    Принимает мем от пользователя и отправляет на модерацию
+    """
     if not message.photo and not message.video:
         await message.answer('Отправьте картинку и/или видео, другой формат информации не принимается!', reply_markup=menu_keyboard)
         await state.set_state(Form.add_meme)
@@ -88,6 +95,9 @@ async def add_media_controller(message: types.Message, state: FSMContext):
 
 
 async def moderate_controller(callback: types.CallbackQuery, state: FSMContext):
+    """
+    Обрабатывает кнопку админа "смотреть предложку"
+    """
     if not( str(callback.message.chat.id) in ADMINS_ID ):
         await callback.message.edit_text("Вы не админ!", reply_markup=menu_keyboard)
         return
@@ -114,6 +124,9 @@ async def moderate_controller(callback: types.CallbackQuery, state: FSMContext):
 
 
 async def good_meme_controller(callback: types.CallbackQuery, state: FSMContext):
+    """
+    Обрабатывает одобрение мема админом
+    """
     data = await state.get_data()
     id = data.get('meme_id')
     media = await get_test_meme_by_id(id)
@@ -128,6 +141,9 @@ async def good_meme_controller(callback: types.CallbackQuery, state: FSMContext)
 
 
 async def bad_meme_controller(callback: types.CallbackQuery, state: FSMContext):
+    """
+    Обрабатывает неодобрение мема админом
+    """
     data = await state.get_data()
     id = data.get('meme_id')
     media = await get_test_meme_by_id(id)
@@ -142,6 +158,11 @@ async def bad_meme_controller(callback: types.CallbackQuery, state: FSMContext):
 
 
 async def watch_meme_controller(callback: types.CallbackQuery, state: FSMContext):
+    """
+    Обрабатывает кнопку "листать мемы"
+    """
+    await get_or_create_new_user(chat_id=callback.message.chat.id, change_us=True,
+                                 username=callback.message.from_user.username)
     meme = await get_random_meme()
     if meme is None:
         if str(callback.message.chat.id) in ADMINS_ID:
@@ -169,6 +190,9 @@ async def watch_meme_controller(callback: types.CallbackQuery, state: FSMContext
 
 
 async def like_meme_controller(callback: types.CallbackQuery, state: FSMContext):
+    """
+    Обрабатывает лайк на мем
+    """
     data = await state.get_data()
     mm_id = data.get('mm_id')
     await create_like(callback.message.chat.id, mm_id)
@@ -182,6 +206,9 @@ async def like_meme_controller(callback: types.CallbackQuery, state: FSMContext)
 
 
 async def dislike_meme_controller(callback: types.CallbackQuery, state: FSMContext):
+    """
+    Обрабатывает дизлайк (не совсем дизлайк, просто игнор вместо лайка) на мем
+    """
     data = await state.get_data()
     data.pop('mm_id')
     await state.update_data(**data)
