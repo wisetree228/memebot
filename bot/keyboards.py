@@ -1,37 +1,26 @@
 """
 клавиатуры бота
 """
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-choose_gender_keyboard = ReplyKeyboardMarkup(keyboard=[
-    [KeyboardButton(text="Мужчина"), KeyboardButton(text="Женщина")]
-], resize_keyboard=True, one_time_keyboard=True)
+menu_keyboard = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text="Добавить мем", callback_data="add_meme")],
+    [InlineKeyboardButton(text="Листать мемы", callback_data="watch_memes")]
+])
 
-
-async def get_main_menu_keyboard(likes_count: int):
-    """
-    Создаёт клавиатуру для главного меню с указанным количеством входящих лайков
-    :param likes_count:
-    :return:
-    """
-    main_menu_keyboard = ReplyKeyboardMarkup(keyboard=[
-        [KeyboardButton(text="Смотреть мою анкету")],
-        [KeyboardButton(text="Листать анкеты")],
-        [KeyboardButton(text=f"Входящие лайки: {likes_count}")]
-    ], resize_keyboard=True, one_time_keyboard=True)
-    return main_menu_keyboard
+async def get_admin_keyboard(memes_count: int):
+    admin_keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="Добавить мем", callback_data="add_meme")],
+        [InlineKeyboardButton(text="Листать мемы", callback_data="watch_memes")],
+        [InlineKeyboardButton(text=f"Новых мемов: {memes_count}", callback_data="moderate")]
+    ])
+    return admin_keyboard
 
 
-choose_who_you_search = ReplyKeyboardMarkup(keyboard=[
-    [KeyboardButton(text="Мужчин"), KeyboardButton(text="Женщин")],
-    [KeyboardButton(text="Кого угодно")]
-], resize_keyboard=True, one_time_keyboard=True)
+accept_or_not_keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="Одобрить", callback_data="good"), InlineKeyboardButton(text="Не одобрить", callback_data="bad")]
+])
 
-
-like_keyboard = ReplyKeyboardMarkup(keyboard=[
-    [KeyboardButton(text="Лайк"), KeyboardButton(text="Дизлайк")]
-], resize_keyboard=True, one_time_keyboard=True)
-
-change_coordinates_keyboard = ReplyKeyboardMarkup(keyboard=[
-    [KeyboardButton(text="Отказаться")]
-], resize_keyboard=True, one_time_keyboard=True)
+like_keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="Лайк", callback_data="like"), InlineKeyboardButton(text="Игнор", callback_data="dislike")]
+])

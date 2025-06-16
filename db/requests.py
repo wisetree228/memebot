@@ -42,3 +42,106 @@ async def get_or_create_new_user(chat_id: int, change_us: bool = False, username
         return new_user
 
 
+async def add_test_media(user_id: int, media: bytes, type: str, caption: str):
+    """
+    Добавляет в базу данных фото или видео пользователя,
+    ещё не прошедшие модерацию
+    :param user_id:
+    :param media: байты файла
+    :param type: тип (photo или video)
+    :return:
+    """
+    async with get_db() as db:
+        new_media = Media_test(
+            user_id=user_id,
+            file=media,
+            media_type=type,
+            caption = caption
+        )
+        db.add(new_media)
+        await db.commit()
+
+
+async def get_memes_count():
+    async with get_db() as db:
+        count = await db.execute(select(func.count(Media_test.id)))
+        return count.scalar_one()
+
+
+async def get_first_test_meme():
+    async with get_db() as db:
+        result = await db.execute(select(Media_test).options(
+            joinedload(Media_test.user)
+        ))
+        media = result.scalars().first()
+        return media
+
+
+async def get_test_meme_by_id(id: int):
+    async with get_db() as db:
+        result = await db.execute(select(Media_test).where(Media_test.id == id))
+        media = result.scalars().first()
+        return media
+
+
+async def add_media(user_id: int, media: bytes, type: str, caption: str):
+    """
+    Добавляет в базу данных фото или видео пользователя
+    :param user_id:
+    :param media: байты файла
+    :param type: тип (photo или video)
+    :return:
+    """
+    async with get_db() as db:
+        new_media = Media(
+            user_id=user_id,
+            file=media,
+            media_type=type,
+            caption = caption
+        )
+        db.add(new_media)
+        await db.commit()
+
+
+async def delete_test_media(id: int):
+    async with get_db() as db:
+        await db.execute(delete(Media_test).where(
+            Media_test.id==id
+        ))
+        await db.commit()
+
+
+async def get_random_meme():
+    async with get_db() as db:
+        result = await db.execute(select(Media).order_by(func.random()).options(
+            joinedload(Media.user)
+        ))
+        memes = result.scalars().all()
+        return random.choice(memes) if memes else None
+
+
+async def get_meme_likes_count(meme_id: int):
+    async with get_db() as db:
+        count = await db.execute(select(func.count(Like.id)).where(Like.media_id==meme_id))
+        return count.scalar_one()
+
+
+async def create_like(user_id: int, meme_id: int):
+    async with get_db() as db:
+        likes = await db.execute(select(Like).where(
+            and_(
+                Like.author_id == user_id,
+                Like.media_id==meme_id
+            )
+        ))
+        like = likes.scalars().first()
+        if like:
+            return
+        new_like = Like(
+            author_id=user_id,
+            media_id=meme_id
+        )
+        db.add(new_like)
+        await db.commit()
+
+

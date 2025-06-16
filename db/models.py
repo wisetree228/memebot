@@ -26,27 +26,20 @@ class User(Base):
     """
     __tablename__ = 'users'
     id = Column(BigInteger, primary_key=True)
-    name = Column(String)
-    about = Column(Text)
-    gender = Column(String)
-    age = Column(Integer)
-    who_search = Column(String)
     username = Column(String)
-    city = Column(String)
-    lat = Column(Float)
-    lon = Column(Float)
 
     media = relationship("Media", back_populates="user", cascade="all, delete-orphan")
+    media_test = relationship("Media_test", back_populates="user", cascade="all, delete-orphan")
     likes_created = relationship("Like", foreign_keys='Like.author_id', back_populates="author")
     created_at = Column(DateTime, default=datetime.now)
 
 
 class Media(Base):
     """
-    Модель медиа (фото или видео пользователя)
+    Модель медиа (фото или видео пользователя) с подписью
     """
     __tablename__ = 'media'
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
     file = Column(LargeBinary)
     media_type = Column(String)
     caption = Column(String)
@@ -55,9 +48,22 @@ class Media(Base):
     likes = relationship("Like", foreign_keys='Like.media_id', back_populates="media")
 
 
+class Media_test(Base):
+    """
+    Модель медиа (фото или видео пользователя) с подписью
+    """
+    __tablename__ = 'media_test'
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    file = Column(LargeBinary)
+    media_type = Column(String)
+    caption = Column(String)
+    user_id = Column(BigInteger, ForeignKey("users.id"), nullable=False)
+    user = relationship("User", back_populates="media_test")
+
+
 class Like(Base):
     """
-    Модель лайка от одного пользователя другому
+    Модель лайка от пользователя на мем
     """
     __tablename__ = 'likes'
     id = Column(Integer, primary_key=True, autoincrement=True)
