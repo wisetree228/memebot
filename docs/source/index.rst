@@ -1,4 +1,4 @@
-Mikelandjelo-dai-pivchik documentation
+Memebot documentation
 ===============
 
 

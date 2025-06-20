@@ -6,7 +6,7 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'mikelanjelo_dai_pivchik'
+project = 'memebot'
 copyright = '2025, wisetree228'
 author = 'wisetree228'
 release = '1.0'
